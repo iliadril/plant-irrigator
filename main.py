@@ -3,7 +3,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import numpy as np
 
-csv_content = pd.read_csv('data.csv', names = ['data','humidity','water_level'])
+csv_content = pd.read_csv('data\\test.csv', names = ['data','humidity','water_level'])
 data = csv_content['data'].tolist()
 humidity = csv_content['humidity'].tolist()
 water_level = csv_content['water_level'].tolist()[1:]
