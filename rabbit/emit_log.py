@@ -12,7 +12,7 @@ def send_message(exchange_name: str, message: str):
     chan = conn.channel()
 
     chan.exchange_declare(exchange=exchange_name, exchange_type='fanout')
-    chan.basic_publish(exchange=exchange_name, routing_key='', body=bytes(message))
+    chan.basic_publish(exchange=exchange_name, routing_key='', body=bytes(message.encode('utf-8')))
     conn.close()
 
 
