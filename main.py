@@ -1,11 +1,12 @@
-from dash import Dash, dcc, html
-from dash.dependencies import Input, Output
+import time
+
 import pandas as pd
 import plotly.graph_objects as go
-import plotly.graph_objects as no
+from dash import Dash, dcc, html
+from dash.dependencies import Input, Output, State
 from plotly.subplots import make_subplots
-import numpy as np
-CSV_PATH = 'data.csv' # change path
+
+CSV_PATH = './data/data.csv'
 
 
 def get_data(path):
@@ -16,6 +17,7 @@ def get_data(path):
         readable_data.append(pd.to_datetime(i, unit='s'))
     return readable_data
 
+
 def get_humidity(path):
     humidity_percentage = []
     csv_content = pd.read_csv(path, names=['data', 'humidity', 'assigned_humidity', 'water_level'])
@@ -24,26 +26,31 @@ def get_humidity(path):
         humidity_percentage.append(round(int(i) / 750 * 100, 2))
     return humidity_percentage
 
+
 def get_water(path):
     csv_content = pd.read_csv(path, names=['data', 'humidity', 'assigned_humidity', 'water_level'])
     water_level = csv_content['water_level'].tolist()[1:]
     return water_level
+
 
 def get_assigned(path):
     assigned_humidity_in_percent = []
     csv_content = pd.read_csv(path, names=['data', 'humidity', 'assigned_humidity', 'water_level'])
     assigned_humidity = csv_content['assigned_humidity'].tolist()[1:]
     for i in assigned_humidity:
-        assigned_humidity_in_percent.append(round(int(i)/7.5,2))
+        assigned_humidity_in_percent.append(round(int(i) / 7.5, 2))
     return assigned_humidity_in_percent
+
 
 def get_acutal_given_humidity(path):
     csv_content = pd.read_csv(path, names=['data', 'humidity', 'assigned_humidity', 'water_level'])
     assigned_humidity = csv_content['assigned_humidity'].tolist()[1:]
-    return round(int(assigned_humidity[-1])/7.5,0)
+    return round(int(assigned_humidity[-1]) / 7.5, 0) if len(assigned_humidity) > 1 else 50
+
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = Dash(__name__, external_stylesheets=external_stylesheets)
+
 
 def make_plot():
     fig = make_subplots(specs=[[{"secondary_y": True}]])
@@ -55,15 +62,15 @@ def make_plot():
         go.Scatter(x=get_data(CSV_PATH), y=get_water(CSV_PATH), name="Poziom Wody", line=dict(color='red'), yaxis="y2"))
 
     fig.add_trace(
-        go.Scatter(x=get_data(CSV_PATH), y=get_assigned(CSV_PATH), name="Zadana Wilgotność", line=dict(color='green'), yaxis="y3"))
-
+        go.Scatter(x=get_data(CSV_PATH), y=get_assigned(CSV_PATH), name="Zadana Wilgotność", line=dict(color='green'),
+                   yaxis="y3"))
 
     fig.update_layout(
         xaxis=dict(
             domain=[0.1, 1]),
         yaxis=dict(
             autotypenumbers='convert types',
-            range=[0,105],
+            range=[0, 105],
             title="Wilgotność",
             titlefont=dict(
                 color='blue'
@@ -85,7 +92,7 @@ def make_plot():
             anchor="free",
             overlaying="y",
             side="left",
-            position = 0.05
+            position=0.05
         ),
         yaxis3=dict(
             range=[0, 105],
@@ -100,12 +107,12 @@ def make_plot():
             anchor="free",
             overlaying="y",
             side="left",
-            position = 0
+            position=0
         )
     )
 
     fig.update_layout(
-        title_text="", width = 1800, height = 760
+        title_text="", width=1800, height=760
     )
 
     # Set x-axis title
@@ -113,42 +120,39 @@ def make_plot():
     return fig
 
 
-
 app.layout = html.Div([
     html.H1(children='Wykres symulujący działanie robota nawadniającego'),
     dcc.Graph(
         figure=make_plot(),
         id='graph',
-        ),
+    ),
     dcc.Slider(
         0, 100,
-        value=get_acutal_given_humidity("data.csv"), # to change path
+        value=get_acutal_given_humidity(CSV_PATH),
         marks=None,
         id='my-slider'
-        ),
+    ),
     dcc.Interval(
-            id='interval-component-graph',
-            interval=1*8000, # in milliseconds
-            n_intervals=0
-        ),
-    dcc.Interval(
-            id='interval-component-slider',
-            interval=1*1000, # in milliseconds
-            n_intervals=0
-        ),
-    html.Div(id='slider-output-container'),
+        id='interval-component-graph',
+        interval=1 * 1000 * 60,  # in milliseconds
+        n_intervals=0
+    ),
+
+    html.Div(
+        id='slider-output-container'
+    ),
+
 ])
 
-steps=[]      # steps of slider
 
 @app.callback(
     Output('slider-output-container', 'children'),
     Input('my-slider', 'value'),
-    Input('interval-component-slider', 'n_intervals'))
-def update_output(value, n):
-    #TODO zapis do pliku
-    steps.append(format(value))
-    return
+)
+def update_output(slider_value):
+    print('Change')
+    # TODO send config
+    return slider_value
 
 
 @app.callback(
@@ -158,6 +162,7 @@ def update_output(value, n):
 def update_graph(n):
     fig = make_plot()
     return fig
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
