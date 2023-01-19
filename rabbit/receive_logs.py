@@ -6,7 +6,7 @@ import pika
 
 creds = pika.PlainCredentials('irrigator', 'pogrogator1337')
 pars = pika.ConnectionParameters(host='127.0.0.1', virtual_host='/', credentials=creds, socket_timeout=2)
-conn = pika.SelectConnection(pars)
+conn = pika.BlockingConnection(pars)
 chan = conn.channel()
 
 chan.exchange_declare(exchange='logs', exchange_type='fanout')
