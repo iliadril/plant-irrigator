@@ -26,7 +26,7 @@ def modify_csv(ch, method, properties, body):
 
     with open('../data/data.csv', 'a') as f:
         writer = csv.writer(f)
-        writer.writerow([timestamp, humidity, target_humidity, math.ceil(water_level)])
+        writer.writerow([int(timestamp), int(humidity), int(target_humidity), math.ceil(float(water_level))])
 
 
 chan.basic_consume(queue=queue_name, on_message_callback=modify_csv, auto_ack=True)
