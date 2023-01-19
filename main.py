@@ -153,7 +153,7 @@ app.layout = html.Div([
     Input('my-slider', 'value'),
 )
 def update_output(slider_value):
-    rabbit.send_message('config', f'{slider_value * 7.5}')
+    rabbit.send_message('config', f'{int(slider_value * 7.5)}')
     return slider_value
 
 
