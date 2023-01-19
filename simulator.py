@@ -12,7 +12,7 @@ def get_target_humidity(config_path):
 
 class Simulator:
     step: int = 1  # simulation step clock in seconds
-    config_path: str = 'data/settings.ini'
+    config_path: str = './data/settings.ini'
 
     def __init__(self):
         self.humidity: int = 350  # humidity in range <0, 750>

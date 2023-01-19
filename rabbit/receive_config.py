@@ -1,6 +1,6 @@
 #!/usr/bin/env python
+import configparser
 import math
-import csv
 
 import pika
 
@@ -10,23 +10,23 @@ pars = pika.ConnectionParameters(host='127.0.0.1', virtual_host='/', credentials
 conn = pika.BlockingConnection(pars)
 chan = conn.channel()
 
-chan.exchange_declare(exchange='logs', exchange_type='fanout')
+chan.exchange_declare(exchange='config', exchange_type='fanout')
 
 result = chan.queue_declare(queue='', exclusive=True)
 queue_name = result.method.queue
 
-chan.queue_bind(exchange='logs', queue=queue_name)
+chan.queue_bind(exchange='config', queue=queue_name)
 
-print(' [*] Waiting for logs. To exit press CTRL+C')
+print(' [*] Waiting for config. To exit press CTRL+C')
 
 
 def modify_csv(ch, method, properties, body):
-    print(f" [x] Log received: {body.decode('utf-8')}")
-    timestamp, humidity, target_humidity, water_level = body.decode('utf-8').split(' ')
+    print(f" [x] Config: {body.decode('utf-8')}")
+    target_humidity = body.decode('utf-8')
 
-    with open('../data/data.csv', 'a') as f:
-        writer = csv.writer(f)
-        writer.writerow([timestamp, humidity, target_humidity, math.ceil(water_level)])
+    config = configparser.ConfigParser()
+    config.read('data/settings.ini')
+    config.set('DEFAULT', 'target_humidity', target_humidity)
 
 
 chan.basic_consume(queue=queue_name, on_message_callback=modify_csv, auto_ack=True)
