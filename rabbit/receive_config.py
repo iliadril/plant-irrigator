@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 import configparser
-import math
 
 import pika
-
 
 creds = pika.PlainCredentials('irrigator', 'pogrogator1337')
 pars = pika.ConnectionParameters(host='127.0.0.1', virtual_host='/', credentials=creds, socket_timeout=2)
@@ -25,7 +23,7 @@ def modify_csv(ch, method, properties, body):
     target_humidity = body.decode('utf-8')
 
     config = configparser.ConfigParser()
-    config.read('data/settings.ini')
+    config.read('../data/settings.ini')
     config.set('DEFAULT', 'target_humidity', target_humidity)
 
 
