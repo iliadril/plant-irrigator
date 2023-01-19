@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 import plotly.graph_objects as no
 from plotly.subplots import make_subplots
 import numpy as np
-CSV_PATH = 'data\\test.csv'
+CSV_PATH = 'data.csv' # change path
 
 
 def get_data(path):
@@ -30,14 +30,17 @@ def get_water(path):
     return water_level
 
 def get_assigned(path):
+    assigned_humidity_in_percent = []
     csv_content = pd.read_csv(path, names=['data', 'humidity', 'assigned_humidity', 'water_level'])
     assigned_humidity = csv_content['assigned_humidity'].tolist()[1:]
-    return assigned_humidity
+    for i in assigned_humidity:
+        assigned_humidity_in_percent.append(round(int(i)/7.5,2))
+    return assigned_humidity_in_percent
 
-# print(readable_data)           #data Timestamp
-# print(humidity_percentage)     # %wilgotnosci
-# print(water_level)             #poziom wody w zbiorniku
-# print(assigned_humidity)       #zadana wilgotnosc
+def get_acutal_given_humidity(path):
+    csv_content = pd.read_csv(path, names=['data', 'humidity', 'assigned_humidity', 'water_level'])
+    assigned_humidity = csv_content['assigned_humidity'].tolist()[1:]
+    return round(int(assigned_humidity[-1])/7.5,0)
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = Dash(__name__, external_stylesheets=external_stylesheets)
@@ -46,36 +49,38 @@ def make_plot():
     fig = make_subplots(specs=[[{"secondary_y": True}]])
 
     fig.add_trace(
-        go.Scatter(x=get_data(CSV_PATH), y=get_humidity(CSV_PATH), name="Wilgotność"))
+        go.Scatter(x=get_data(CSV_PATH), y=get_humidity(CSV_PATH), name="Wilgotność", line=dict(color='blue')))
 
     fig.add_trace(
-        go.Scatter(x=get_data(CSV_PATH), y=get_water(CSV_PATH), name="Poziom Wody", yaxis="y2"))
+        go.Scatter(x=get_data(CSV_PATH), y=get_water(CSV_PATH), name="Poziom Wody", line=dict(color='red'), yaxis="y2"))
 
     fig.add_trace(
-        go.Scatter(x=get_data(CSV_PATH), y=get_assigned(CSV_PATH), name="Zadana Wilgotność", yaxis="y3"))
+        go.Scatter(x=get_data(CSV_PATH), y=get_assigned(CSV_PATH), name="Zadana Wilgotność", line=dict(color='green'), yaxis="y3"))
 
 
     fig.update_layout(
         xaxis=dict(
             domain=[0.1, 1]),
         yaxis=dict(
+            autotypenumbers='convert types',
             range=[0,105],
             title="Wilgotność",
             titlefont=dict(
-                color="#1f77b4"
+                color='blue'
             ),
             tickfont=dict(
-                color="#1f77b4"
+                color='blue'
             )
         ),
         yaxis2=dict(
+            autotypenumbers='convert types',
             range=[0, 4.2],
             title="Poziom Wody",
             titlefont=dict(
-                color="#ff7f0e"
+                color='red'
             ),
             tickfont=dict(
-                color="#ff7f0e"
+                color='red'
             ),
             anchor="free",
             overlaying="y",
@@ -84,12 +89,13 @@ def make_plot():
         ),
         yaxis3=dict(
             range=[0, 105],
+            autotypenumbers='convert types',
             title="Zadana Wilgotność",
             titlefont=dict(
-                color="#d62728"
+                color='green'
             ),
             tickfont=dict(
-                color="#d62728"
+                color='green'
             ),
             anchor="free",
             overlaying="y",
@@ -99,7 +105,7 @@ def make_plot():
     )
 
     fig.update_layout(
-        title_text="C", width = 1800, height = 760
+        title_text="", width = 1800, height = 760
     )
 
     # Set x-axis title
@@ -116,7 +122,7 @@ app.layout = html.Div([
         ),
     dcc.Slider(
         0, 100,
-        value=50,
+        value=get_acutal_given_humidity("data.csv"), # to change path
         marks=None,
         id='my-slider'
         ),
