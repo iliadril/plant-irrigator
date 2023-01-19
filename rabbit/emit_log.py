@@ -4,7 +4,7 @@ import pika
 import sys
 import logging
 
-logging.basicConfig(level=logging.INFO)
+# logging.basicConfig(level=logging.INFO)
 
 creds = pika.PlainCredentials('irrigator', 'pogrogator1337')
 pars = pika.ConnectionParameters(host='127.0.0.1', virtual_host='/', credentials=creds, socket_timeout=2)
