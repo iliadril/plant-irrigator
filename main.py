@@ -3,8 +3,10 @@ import time
 import pandas as pd
 import plotly.graph_objects as go
 from dash import Dash, dcc, html
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output
 from plotly.subplots import make_subplots
+
+import rabbit.emit_log as rabbit
 
 CSV_PATH = './data/data.csv'
 
@@ -50,6 +52,7 @@ def get_acutal_given_humidity(path):
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = Dash(__name__, external_stylesheets=external_stylesheets)
+server = app.server
 
 
 def make_plot():
@@ -150,8 +153,7 @@ app.layout = html.Div([
     Input('my-slider', 'value'),
 )
 def update_output(slider_value):
-    print('Change')
-    # TODO send config
+    rabbit.send_message('config', f'{slider_value * 7.5}')
     return slider_value
 
 
