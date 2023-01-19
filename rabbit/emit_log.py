@@ -1,20 +1,23 @@
 #!/usr/bin/env python
 
-import pika
 import sys
-import logging
 
-logging.basicConfig(level=logging.INFO)
+import pika
 
-creds = pika.PlainCredentials('irrigator', 'pogrogator1337')
-pars = pika.ConnectionParameters(host='127.0.0.1', virtual_host='/', credentials=creds, socket_timeout=2)
-pars = pika.URLParameters("amqp://irrigator:pogrogator1337@amqt.iliadril.xyz/%2f")
-conn = pika.BlockingConnection(pars)
-chan = conn.channel()
 
-chan.exchange_declare(exchange='logs', exchange_type='fanout')
+def send_message(exchange_name: str, message: str):
+    creds = pika.PlainCredentials('irrigator', 'pogrogator1337')
+    pars = pika.ConnectionParameters(host='127.0.0.1', virtual_host='/', credentials=creds, socket_timeout=2)
+    conn = pika.BlockingConnection(pars)
+    chan = conn.channel()
 
-msg = ' '.join(sys.argv[1:]) or "info: Hello World!"
-chan.basic_publish(exchange='logs', routing_key='', body=msg)
-print(f" [x] Sent '{msg}'")
-conn.close()
+    chan.exchange_declare(exchange=exchange_name, exchange_type='fanout')
+    chan.basic_publish(exchange=exchange_name, routing_key='', body=bytes(message.encode('utf-8')))
+    conn.close()
+
+
+if __name__ == "__main__":
+    msg = ' '.join(sys.argv[1:]) or "info: Hello World!"
+    send_message('logs', msg)
+    print(f" [x] Sent '{msg}'")
+
