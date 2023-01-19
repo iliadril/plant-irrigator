@@ -5,6 +5,8 @@ from dash import Dash, dcc, html
 from dash.dependencies import Input, Output
 from plotly.subplots import make_subplots
 
+import rabbit.emit_log as rabbit
+
 CSV_PATH = './data/data.csv'
 
 
@@ -163,7 +165,7 @@ app.layout = serve_layout
     Input('target-humidity-slider', 'value'),
 )
 def update_output(slider_value):
-    # rabbit.send_message('config', f'{int(slider_value * 7.5)}')
+    rabbit.send_message('config', f'{int(slider_value * 7.5)}')
     return slider_value
 
 
