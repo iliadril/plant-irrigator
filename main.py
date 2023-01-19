@@ -1,12 +1,9 @@
-import time
-
+import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.graph_objects as go
 from dash import Dash, dcc, html
 from dash.dependencies import Input, Output
 from plotly.subplots import make_subplots
-
-import rabbit.emit_log as rabbit
 
 CSV_PATH = './data/data.csv'
 
@@ -115,7 +112,7 @@ def make_plot():
     )
 
     fig.update_layout(
-        title_text="", width=1800, height=760
+        title_text="Wykres symulujący działanie robota nawadniającego"
     )
 
     # Set x-axis title
@@ -123,37 +120,50 @@ def make_plot():
     return fig
 
 
-app.layout = html.Div([
-    html.H1(children='Wykres symulujący działanie robota nawadniającego'),
-    dcc.Graph(
-        figure=make_plot(),
-        id='graph',
-    ),
-    dcc.Slider(
-        0, 100,
-        value=get_acutal_given_humidity(CSV_PATH),
-        marks=None,
-        id='my-slider'
-    ),
-    dcc.Interval(
-        id='interval-component-graph',
-        interval=1 * 1000 * 60,  # in milliseconds
-        n_intervals=0
-    ),
+def serve_layout():
+    return dbc.Container([
+        dbc.Row(
+            dbc.Col(
+                dcc.Graph(
+                    figure=make_plot(),
+                    id='graph',
+                ),
+            )
+        ),
+        dbc.Row(
+            dbc.Col(
+                html.H6("nastawa pożądanej wilgotności"),
+            ),
+        ),
+        dbc.Row(
+            dbc.Col(
+                dcc.Slider(
+                    0, 100,
+                    value=get_acutal_given_humidity(CSV_PATH),
+                    id='target-humidity-slider',
+                    tooltip={'placement': 'bottom'}
+                ),
+                width=6,
+            )
+        ),
+        dcc.Interval(
+            id='interval-component-graph',
+            interval=1 * 1000 * 60,  # in milliseconds
+            n_intervals=0,
+        ),
 
-    html.Div(
-        id='slider-output-container'
-    ),
+    ])
 
-])
+
+app.layout = serve_layout
 
 
 @app.callback(
-    Output('slider-output-container', 'children'),
-    Input('my-slider', 'value'),
+    Output('target-humidity-slider', 'value'),
+    Input('target-humidity-slider', 'value'),
 )
 def update_output(slider_value):
-    rabbit.send_message('config', f'{int(slider_value * 7.5)}')
+    # rabbit.send_message('config', f'{int(slider_value * 7.5)}')
     return slider_value
 
 
