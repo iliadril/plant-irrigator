@@ -1,7 +1,7 @@
 import configparser
 import random
 import time
-from rabbit.emit_log import send_message
+import rabbit.emit_log as rabbit
 
 
 def get_target_humidity(config_path):
@@ -12,7 +12,7 @@ def get_target_humidity(config_path):
 
 class Simulator:
     step: int = 1  # simulation step clock in seconds
-    config_path: str = '../data/settings.ini'
+    config_path: str = 'data/settings.ini'
 
     def __init__(self):
         self.humidity: int = 350  # humidity in range <0, 750>
@@ -27,7 +27,7 @@ class Simulator:
                 }
 
     def send_logs(self):
-        send_message('logs', f'{int(time.time())} {self.humidity} {self.target_humidity} {self.water_level}')
+        rabbit.send_message('logs', f'{int(time.time())} {self.humidity} {self.target_humidity} {self.water_level}')
 
     def irrigate(self):
         if self.water_level > 0.0:
