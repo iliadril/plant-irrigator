@@ -24,7 +24,9 @@ def modify_csv(ch, method, properties, body):
 
     config = configparser.ConfigParser()
     config.read('../data/settings.ini')
-    config.set('DEFAULT', 'target_humidity', target_humidity)
+    config['DEFAULT']['target_humidity'] = target_humidity
+    with open('../data/settings.ini', 'w') as f:
+        config.write(f)
 
 
 chan.basic_consume(queue=queue_name, on_message_callback=modify_csv, auto_ack=True)
